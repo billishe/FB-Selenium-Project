@@ -2,6 +2,8 @@ package autotest2;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.List;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -81,24 +83,87 @@ public class Autotest2 {
         //goto friends list
         WebElement friends = driver.findElement(By.xpath("//a[text()='Friends']"));
         friends.click();
-        
+        try {
+            Thread.sleep(2000);   
+         } catch (Exception e) {
+        } 
         //scroll down to the last friend
-        JavascriptExecutor jse = (JavascriptExecutor) driver;
-        jse.executeScript("window.scrollTo(0,1233)");   
-        
-        //update the datalist
-        
-        
-        //make a cls document
-        
-        
-        //update the cls fields to reflect fetched data
-        
-        
-        //save and close file 
-        
-        
-        
-        
+        List<WebElement> totalFriendName;
+        while(true){
+            List<WebElement> friendName = driver.findElements(By.xpath("//div[@class='fsl fwb fcb']/a"));
+            if(friendName.size() == 0){continue;}
+            System.out.println("total friends: "+ friendName.size());
+            
+            
+            try {
+                Thread.sleep(10000);   
+            } catch (Exception e) {
+            }
+
+            WebElement currentLast =  friendName.get(friendName.size() - 1);
+            
+            int yCoordinate = currentLast.getLocation().y;
+               
+            
+            JavascriptExecutor jse = (JavascriptExecutor) driver;
+            jse.executeScript("window.scrollTo(0,"+yCoordinate+")");  
+            
+            
+            totalFriendName = driver.findElements(By.xpath("//div[@class='fsl fwb fcb']/a"));
+            if(totalFriendName.size() == 40){ break; }
+        }
+        for(WebElement name : totalFriendName)
+        {
+            //go to friend profile
+            String nameF = name.getText();
+            WebElement q = driver.findElement(By.xpath("//input[@name='q']"));
+            q.sendKeys(nameF);
+            q.submit();
+            try{Thread.sleep(3000);}catch(Exception e){}
+            driver.findElement(By.xpath("//a[@class='profileLink']")).click();
+            
+            
+            //fetch number of friends
+            WebElement friendsOfThisUser = driver.findElement(By.xpath("//a[@text()='Friends']"));
+            String x = friendsOfThisUser.getText();
+            System.out.println(x);
+            
+            //fetch email
+            driver.findElement(By.xpath("//a[@text()=''About]")).click();
+            
+            //fetch phone number
+            
+            
+            //go back to my friends list
+            driver.get("https://facebook.com");
+            
+            //wait untill the page loads
+            try {
+                Thread.sleep(2000);
+            } catch (Exception e) {
+
+            }
+            
+            //wait until page loads
+            try {
+                Thread.sleep(7000);
+            } catch (Exception e) {
+            }
+
+            //goto profile 
+            if (profile.isEnabled() && profile.isDisplayed()) {
+                profile.click();
+            } else {
+                System.out.println("Element not found! Signing in again...");
+                username.sendKeys("billishe");
+                password.sendKeys(getPass());
+                Login.click();
+                
+                try {
+                Thread.sleep(7000);
+                } catch (Exception e) {}
+                profile.click();
+            }
+        }
     }
 }
