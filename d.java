@@ -1,9 +1,17 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package autotest2;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -21,17 +29,25 @@ import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
+/**
+ *
+ * @author Billion Shiferaw
+ */
 public class Autotest2 {
-
-
+    /**
+     * @param args the command line arguments
+     */
     public static void main(String[] args) throws IOException {
+        // TODO code application logic here
         facebookFriendsToCls();
     }
+    public static void facebookFriendsToCls() throws FileNotFoundException{
+        
+        /*
+            setting up the chrome driver signing in and going to profile and then friends
+        */
 
-    public static void facebookFriendsToCls()
-    {
-         //set system property to work on chromedriver
+        //set system property to work on chromedriver
         System.setProperty("webdriver.chrome.driver", "chromedriver");
         
         //add and enable ultrasurf extension
@@ -43,14 +59,11 @@ public class Autotest2 {
         //open webdriver with ultrasurf VPN
         WebDriver driver = new ChromeDriver(surfEasy);
         driver.manage().window().maximize();
+        try {Thread.sleep(2000);} catch (Exception e) {}  
         driver.get("https://facebook.com");
         
         //wait untill the page loads
-        try {
-            Thread.sleep(2000);   
-        } catch (Exception e) {
-            
-        }  
+        try {Thread.sleep(2000);} catch (Exception e) {}  
         
         //find and fill in username and password fields
         WebElement username = driver.findElement(By.id("email"));
@@ -60,7 +73,7 @@ public class Autotest2 {
         password.sendKeys(getPass());
         Login.click();
         
-        //weait until page loads
+        //wait until page loads
         try {
             Thread.sleep(7000);   
          } catch (Exception e) {
@@ -87,8 +100,17 @@ public class Autotest2 {
             Thread.sleep(2000);   
          } catch (Exception e) {
         } 
-        //scroll down to the last friend
+        
+        /*
+          Finiding and fetching data of friends  
+        */
+
         List<WebElement> totalFriendName;
+        List<WebElement> totalFriendemail;
+        List<WebElement> totalFriendphone;
+        List<WebElement> totalFriendsOfFriends;
+
+        //totalFriendName
         while(true){
             List<WebElement> friendName = driver.findElements(By.xpath("//div[@class='fsl fwb fcb']/a"));
             if(friendName.size() == 0){continue;}
@@ -112,6 +134,9 @@ public class Autotest2 {
             totalFriendName = driver.findElements(By.xpath("//div[@class='fsl fwb fcb']/a"));
             if(totalFriendName.size() == 40){ break; }
         }
+        
+
+        
         for(WebElement name : totalFriendName)
         {
             //go to friend profile
@@ -124,7 +149,8 @@ public class Autotest2 {
             
             
             //fetch number of friends
-            WebElement friendsOfThisUser = driver.findElement(By.xpath("//a[@text()='Friends']"));
+            try{Thread.sleep(3000);}catch(Exception e){}
+            WebElement friendsOfThisUser = driver.findElement(By.xpath("//a[@data-tab-key='Friends']"));
             String x = friendsOfThisUser.getText();
             System.out.println(x);
             
@@ -165,5 +191,76 @@ public class Autotest2 {
                 profile.click();
             }
         }
+        
+        //update the datalist
+        String[][] dataArray = new String[200][4];
+        
+        for (int i = 0; i < totalFriendName.size(); i++) {
+            
+            dataArray[i][0] = totalFriendName.get(0).getText();
+            dataArray[i][1] = totalFriendemail.get(0).getText();
+            dataArray[i][2] = totalFriendphone.get(0).getText();
+            dataArray[i][3] = totalFriendsOfFriends.get(0).getText();
+            
+        }
+        
+        //make a cls document
+        Workbook wb = new HSSFWorkbook();
+        FileOutputStream fileOut = new FileOutputStream("facebookToXls.xls");
+        
+
+        CreationHelper createHelper = wb.getCreationHelper();
+        org.apache.poi.ss.usermodel.Sheet sheet = wb.createSheet("friendsList");
+
+        
+        Row row1 = sheet.createRow((short) 0);  // Create the first Row
+        
+        row1.createCell(0).setCellValue(
+        createHelper.createRichTextString("Name"));  // inserting first row cell value
+        
+        row1.createCell(1).setCellValue(
+        createHelper.createRichTextString("E-mail"));
+
+        row1.createCell(3).setCellValue(
+        createHelper.createRichTextString("Phone No"));
+
+        row1.createCell(4).setCellValue(
+        createHelper.createRichTextString("No of Friends"));
+
+        //update the cls fields to reflect fetched data
+        for (int i = 1;i < totalFriendName.size(); i++) {
+            int j = i - 1;
+            String name = dataArray[j][0];
+            String email = dataArray[j][1];
+            String phoneNo = dataArray[j][2];
+            String numberOfFriends = dataArray[j][3];
+
+            Row row = sheet.createRow((short) i);
+            row.createCell(0).setCellValue(
+            createHelper.createRichTextString(name));
+            row.createCell(3).setCellValue(
+            createHelper.createRichTextString(email));
+            row.createCell(2).setCellValue(
+            createHelper.createRichTextString(phoneNo));
+            row.createCell(2).setCellValue(
+            createHelper.createRichTextString(numberOfFriends));    
+
+        }
+        
+
+        // Write the output to a file
+        try {
+            wb.write(fileOut);
+            fileOut.close();
+        } catch (IOException ex) {
+            Logger.getLogger(Autotest2.class.getName()).log(Level.SEVERE, null, ex);
+        }        
+    }
+    public static String getPass()
+    {
+        Scanner sc = new Scanner(System.in);
+        String password = sc.nextLine();
+        return password;
     }
 }
+
