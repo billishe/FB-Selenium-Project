@@ -69,7 +69,7 @@ public class Autotest2 {
         WebElement username = driver.findElement(By.id("email"));
         WebElement password = driver.findElement(By.id("pass"));
         WebElement Login = driver.findElement(By.id("u_0_q"));
-        username.sendKeys("billishe");
+        username.sendKeys("yourusername");
         password.sendKeys(getPass());
         Login.click();
         
